@@ -6,7 +6,7 @@
   <link href="http://yoursite.com/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2024-11-21T13:14:22.183Z</updated>
+  <updated>2024-11-25T12:00:23.488Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>re_newer</title>
+    <link href="http://yoursite.com/2024/11/25/re-newer/"/>
+    <id>http://yoursite.com/2024/11/25/re-newer/</id>
+    <published>2024-11-25T11:56:24.268Z</published>
+    <updated>2024-11-25T12:00:23.488Z</updated>
+    
+    <content type="html"><![CDATA[<p>中文可以用吗？</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;中文可以用吗？&lt;/p&gt;
+</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
