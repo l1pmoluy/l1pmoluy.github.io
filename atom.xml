@@ -6,7 +6,7 @@
   <link href="http://yoursite.com/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2024-11-26T03:18:32.821Z</updated>
+  <updated>2024-12-01T13:34:32.097Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>观PE文件格式有感——更直观的理解计算机</title>
+    <link href="http://yoursite.com/2024/12/01/%E8%A7%82PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E6%9C%89%E6%84%9F%E2%80%94%E2%80%94%E6%9B%B4%E7%9B%B4%E8%A7%82%E7%9A%84%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA/"/>
+    <id>http://yoursite.com/2024/12/01/%E8%A7%82PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E6%9C%89%E6%84%9F%E2%80%94%E2%80%94%E6%9B%B4%E7%9B%B4%E8%A7%82%E7%9A%84%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA/</id>
+    <published>2024-12-01T13:33:59.000Z</published>
+    <updated>2024-12-01T13:34:32.097Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇文章均为新手小白学习过程中，突然有的个人感悟，如果有错误欢迎大师傅们指出</p><h1 id="计算机构造？"><a href="#计算机构造？" class="headerlink" title="计算机构造？"></a>计算机构造？</h1><p>在买电脑的时候我们经常能看到，什么i5，i7处理器，什么16+512，32+1T，这都是什么呢？</p><p>在我浅显的理解里，电脑可以大致分为：CPU，运行内存，内存和显示屏</p><h1 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h1><p>首先说的是内存，很多人都知道，C、D盘是内存，那么为什么C、D盘叫磁盘，而且内存和运行内存又有什么区别呢？</p><p>看到PE文件，我突然想到了这个<strong>C,D盘</strong>为什么叫<strong>磁盘</strong>。其实外面买的那种u盘，<strong>和你电脑里看到的C,D磁盘没什么区别</strong>。简单来说就是说磁盘和电脑之间并不是紧密相连的，而只是相当于有一个<strong>u盘在你的电脑里</strong>，只不过它会自始至终的插在USB口中，而电脑真正运行的东西是<strong>CPU与运行内存</strong>，当你打开一个文件的时候，其实相当与是从U盘（磁盘），映射（拷贝）一份给<strong>运行内存</strong>，再将每一步要用到的东西传给<strong>CPU</strong>处理</p><p>那么既然知道了文件并<strong>不是在磁盘中打开运行</strong>的，是在<strong>运行内存</strong>中打开的，那么<strong>“打开”</strong>是什么呢？</p><p>打开便是映射，一个文件，他有一部分并不是可用的，我们知道，机器它是死的，编写程序的人知道，先走这个部分，再走那个部分，但机器怎么知道呢</p><p>于是便出现了PE文件格式，在文件中会有一部分信息来告诉机器，他应该怎么做，所以一个文件里并不是所有的内容都是需要用到的，所以在映射的时候，<strong>只会映射相对有用的部分（代码块、数据块等）</strong></p><h1 id="运行内存"><a href="#运行内存" class="headerlink" title="运行内存"></a>运行内存</h1><p>说到这里大家就明白了，运行内存的大小决定了什么呢，就是决定了你一次性可以打开多少个文件，运行内存足够大，内存中可以映射到运行内存的文件就足够多（打开的文件就足够多）</p><h1 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h1><p>那么处理器（CPU）的作用，便是将运行内存中的文件按批次处理，相当于计算机的大脑，这里要注意，就像内存与运行内存一样，CPU与运行内存是分开的，是需要运行内存先通过线路传输数据到CPU中，再从CPU传输数据到运行内存中去的，至于一次可以传输多少处理多少，这就和多线程，或者CPU几代有关了，所以CPU的代数与线程数，可以相对反应的是这个电脑，它的“大脑“转的有多快，以及一次可以处理多少事情</p><h1 id="显示屏"><a href="#显示屏" class="headerlink" title="显示屏"></a>显示屏</h1><p>这个就没啥了，我就不过多说了，就是高刷和清晰度啥的区别了，唯一注意的就是显卡，也就是显示屏中的CPU，独立显卡，就是给你的显示屏也装个大脑，处理图像的时候更灵活，更不卡顿</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;本篇文章均为新手小白学习过程中，突然有的个人感悟，如果有错误欢迎大师傅们指出&lt;/p&gt;
+&lt;h1 id=&quot;计算机构造？&quot;&gt;&lt;a href=&quot;#计算机构造？&quot; class=&quot;headerlink&quot; title=&quot;计算机构造？&quot;&gt;&lt;/a&gt;计算机构造？&lt;/h1&gt;&lt;p&gt;在买电脑的时候我</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>CreatRemoteThread实现注入</title>
