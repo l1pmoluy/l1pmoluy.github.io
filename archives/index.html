@@ -402,6 +402,28 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2024/12/05/PEloader/">
+                <span class="abstract-title-text">PEloader</span>
+            </a>
+            <div class="abstract-content">
+                结合了前文PE文件格式的知识就可以做出一个简易的PE加载器（就是模拟了启动.exe这个过程）
+源码引用师傅的
+原理首先要打开磁盘文件，可以开辟一处空间，然后模拟磁盘映射到内存的过程，其实大部分就是复制过去就可以，DOS头和NT头都没什么区别，节区表就是得去要根据具体的对齐值来复制对应的地址，最后更改一下重定位表和IAT表就好
+源码经过我九成的努力，和师傅九十成的作品，拼接而成嘿嘿
+这里不填充字，就会被大量数字填充可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可恶可...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/12/05">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/12/05</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2024/12/01/%E8%A7%82PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E6%9C%89%E6%84%9F%E2%80%94%E2%80%94%E6%9B%B4%E7%9B%B4%E8%A7%82%E7%9A%84%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA/">
                 <span class="abstract-title-text">观PE文件格式有感——更直观的理解计算机</span>
             </a>
@@ -499,15 +521,20 @@ Windows C++远程线程（CreateRemoteThread）注入DLL方法、代码示例。
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 3
+        Total : 4
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/05</span>
+            <a class="archive-post-title" href="/2024/12/05/PEloader/">PEloader</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">12/01</span>
             <a class="archive-post-title" href="/2024/12/01/%E8%A7%82PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E6%9C%89%E6%84%9F%E2%80%94%E2%80%94%E6%9B%B4%E7%9B%B4%E8%A7%82%E7%9A%84%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA/">观PE文件格式有感——更直观的理解计算机</a>
