@@ -2,9 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://l1pmoluy.github.io/2025/03/25/1/</loc>
+    <loc>https://l1pmoluy.github.io/2025/03/26/%E8%AF%AD%E9%9B%80/</loc>
     
-    <lastmod>2025-03-25</lastmod>
+    <lastmod>2025-03-26</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://l1pmoluy.github.io/2025/03/26/main/</loc>
+    
+    <lastmod>2025-03-26</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
