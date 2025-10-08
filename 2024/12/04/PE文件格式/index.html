@@ -1,0 +1,445 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f5b8d5"><meta name="author" content="l1pmoluy,1392181761@qq.com"><meta name="copyright" content="l1pmoluy"><meta name="generator" content="Hexo 7.3.0"><meta name="theme" content="hexo-theme-yun"><title>PE文件格式 | l1pmoluy</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#f5b8d5"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"l1pmoluy.github.io","root":"/","title":"踏着梦走过时光","version":"1.10.11","mode":"time","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://el-bot-api.vercel.app/api/words/young"},"algolia":{"hits":{"per_page":8}},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><link rel="alternate" href="/atom.xml" title="l1pmoluy" type="application/atom+xml"><script>(function(){
+  var bp = document.createElement('script');
+  var curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else {
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})();</script><meta name="description" content="内核前置——PE文件格式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PE文件格式">
+<meta property="og:url" content="https://l1pmoluy.github.io/2024/12/04/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/index.html">
+<meta property="og:site_name" content="l1pmoluy">
+<meta property="og:description" content="内核前置——PE文件格式">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/1.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/2.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/3.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/4.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/5.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/6.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/7.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/8.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/10.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/11.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/12.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/13.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/14.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/15.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/16.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/17.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/18.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/19.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/20.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/21.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/22.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/23.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/24.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/25.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/26.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/27.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/28.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/29.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/30.jpg">
+<meta property="article:published_time" content="2024-12-04T03:16:14.000Z">
+<meta property="article:modified_time" content="2025-10-08T10:03:47.048Z">
+<meta property="article:author" content="l1pmoluy">
+<meta property="article:tag" content="windows深度学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/1.png"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="l1pmoluy"><img width="96" loading="lazy" src="/images/rika.jpg" alt="l1pmoluy"><span class="site-author-status" title="Looking for dawn.">🥰</span></a><div class="site-author-name"><a href="/about/">l1pmoluy</a></div><span class="site-name">l1pmoluy</span><sub class="site-subtitle">Dawing...</sub><div class="site-description">l1pmoluy's blog</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">13</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">2</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">3</span></a></div><a class="site-state-item hty-icon-button" href="/about/#comment" title="留言板"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:clipboard-line"></span></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" title="1392181761" target="_blank" style="color:#12B7F5"><span class="icon iconify" data-icon="ri:qq-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://blog.csdn.net/dawn_ing_" title="csdn" target="_blank" style="color:#e83b07"><span class="icon iconify" data-icon="ri:terminal-box-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://bbs.kanxue.com/user-home-1012312.htm" title="看雪" target="_blank" style="color:#e83b07"><span class="icon iconify" data-icon="ri:snowflake-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="1392181761@qq.com" title="E-Mail" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:mail-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://www.yuque.com/l1pmpluy" title="语雀" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:yuque-line"></span></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="友链" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:user-community-line"></span></a><a class="links-item hty-icon-button" href="/girl/" title="喜欢的女孩子" style="color:hotpink"><span class="icon iconify" data-icon="ri:women-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PE%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">PE的基本结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9C%B0%E5%9D%80ImageBase"><span class="toc-number">1.1.</span> <span class="toc-text">基地址ImageBase</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80VA"><span class="toc-number">1.2.</span> <span class="toc-text">虚拟地址VA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%AF%B9%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80RVA"><span class="toc-number">1.3.</span> <span class="toc-text">相对虚拟地址RVA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%81%8F%E7%A7%BB%E5%9C%B0%E5%9D%80"><span class="toc-number">1.4.</span> <span class="toc-text">文件偏移地址</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="toc-number">2.</span> <span class="toc-text">文件头</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MS-DOS%E5%A4%B4%E9%83%A800-00-00-B0"><span class="toc-number">2.1.</span> <span class="toc-text">MS-DOS头部	00 00-00 B0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PE%E6%96%87%E4%BB%B6%E5%A4%B4%EF%BC%88IMAGE-NT-HEADER%EF%BC%8900-B0-01-20"><span class="toc-number">2.2.</span> <span class="toc-text">PE文件头（IMAGE_NT_HEADER）	00 B0-01 20</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Signature%E5%AD%97%E6%AE%B5"><span class="toc-number">2.3.</span> <span class="toc-text">Signature字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IMAGE-FILE-HEADER%E7%BB%93%E6%9E%84"><span class="toc-number">2.4.</span> <span class="toc-text">IMAGE_FILE_HEADER结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IMAGE-OPTIONAL-HEADER%E7%BB%93%E6%9E%84-%E5%8F%AF%E9%80%89%E6%98%A0%E5%83%8F%E5%A4%B4"><span class="toc-number">2.5.</span> <span class="toc-text">IMAGE_OPTIONAL_HEADER结构-可选映像头</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97"><span class="toc-number">3.</span> <span class="toc-text">区块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97%E8%A1%A8"><span class="toc-number">3.1.</span> <span class="toc-text">区块表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%8C%BA%E5%9D%97%E4%B8%8E%E5%8C%BA%E5%9D%97%E5%90%88%E5%B9%B6"><span class="toc-number">3.2.</span> <span class="toc-text">常见区块与区块合并</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97%E7%9A%84%E5%AF%B9%E9%BD%90%E5%80%BC"><span class="toc-number">3.3.</span> <span class="toc-text">区块的对齐值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%81%8F%E7%A7%BB%E4%B8%8E%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.4.</span> <span class="toc-text">文件偏移与虚拟地址的转换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RVA-%E5%92%8C%E6%96%87%E4%BB%B6%E5%81%8F%E7%A7%BB%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.4.1.</span> <span class="toc-text">RVA 和文件偏移的转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8D%A2%E7%AE%97-RVA-%E5%92%8C%E6%96%87%E4%BB%B6%E5%81%8F%E7%A7%BB"><span class="toc-number">3.4.2.</span> <span class="toc-text">换算 RVA 和文件偏移</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">输入表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-number">4.1.</span> <span class="toc-text">输入函数的调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80-%E4%BD%8E%E6%95%88%E8%B0%83%E7%94%A8"><span class="toc-number">4.1.1.</span> <span class="toc-text">一.低效调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C-%E4%BC%98%E5%8C%96"><span class="toc-number">4.1.2.</span> <span class="toc-text">二.优化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E8%A1%A8%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">4.2.</span> <span class="toc-text">输入表的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E5%9C%B0%E5%9D%80%E8%A1%A8"><span class="toc-number">4.3.</span> <span class="toc-text">输入地址表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E8%A1%A8%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-number">4.4.</span> <span class="toc-text">输入表实例分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%91%E5%AE%9A%E8%BE%93%E5%85%A5"><span class="toc-number">4.5.</span> <span class="toc-text">绑定输入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E8%A1%A8"><span class="toc-number">5.</span> <span class="toc-text">输出表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E8%A1%A8%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">输出表的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E8%A1%A8%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-number">5.2.</span> <span class="toc-text">输出表实例分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E5%9D%80%E9%87%8D%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.</span> <span class="toc-text">基址重定位</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9D%80%E9%87%8D%E5%AE%9A%E4%B9%89%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">6.1.</span> <span class="toc-text">基址重定义的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9D%80%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%A1%A8%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">6.2.</span> <span class="toc-text">基址重定位表的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9D%80%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%A1%A8%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-number">6.3.</span> <span class="toc-text">基址重定位表实例分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B5%84%E6%BA%90"><span class="toc-number">7.</span> <span class="toc-text">资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%BB%93%E6%9E%84"><span class="toc-number">7.1.</span> <span class="toc-text">资源结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84-IMAGE-RESOURCE-DIRECTORY"><span class="toc-number">7.1.1.</span> <span class="toc-text">资源目录结构 IMAGE_RESOURCE_DIRECTORY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%9B%AE%E5%BD%95%E5%85%A5%E5%8F%A3%E7%BB%93%E6%9E%84-IMAGE-RESOURCE-DICETORY-ENTRY"><span class="toc-number">7.1.2.</span> <span class="toc-text">资源目录入口结构 IMAGE_RESOURCE_DICETORY_ENTRY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E6%95%B0%E6%8D%AE%E5%85%A5%E5%8F%A3-IMAGE-RESOURCE-DATA-ENTRY"><span class="toc-number">7.1.3.</span> <span class="toc-text">资源数据入口 IMAGE_RESOURCE_DATA_ENTRY</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%BB%93%E6%9E%84%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-number">7.2.</span> <span class="toc-text">资源结构实例分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B9%E7%9B%AE%E5%BD%95"><span class="toc-number">7.2.1.</span> <span class="toc-text">根目录</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%BC%96%E8%BE%91%E5%B7%A5%E5%85%B7"><span class="toc-number">7.3.</span> <span class="toc-text">资源编辑工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TIS"><span class="toc-number">8.</span> <span class="toc-text">TIS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TLS%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">8.1.</span> <span class="toc-text">TLS回调函数</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#f5b8d5;"><link itemprop="mainEntityOfPage" href="https://l1pmoluy.github.io/2024/12/04/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="l1pmoluy,1392181761@qq.com"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="l1pmoluy"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">PE文件格式</h1><div class="post-meta"><div class="post-time" style="display:block"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2024-12-4 11:16:14" itemprop="dateCreated datePublished" datetime="2024-12-04T11:16:14+08:00">2024-12-4</time><span class="post-meta-divider">-</span><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-2-line"></span></span> <time title="修改时间：2025-10-8 18:03:47" itemprop="dateModified" datetime="2025-10-08T18:03:47+08:00">2025-10-8</time></div><span class="post-count"><span class="post-symbolcount"><span class="post-meta-item-icon" title="本文字数"><span class="icon iconify" data-icon="ri:file-word-line"></span></span> <span title="本文字数">8k</span><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读时长"><span class="icon iconify" data-icon="ri:timer-line"></span></span> <span title="阅读时长">30m</span></span></span><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><span class="icon iconify" data-icon="ri:folder-line"></span></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E9%80%86%E5%90%91%E8%A1%8C%E9%A9%B6/" style="--text-color:#FF0000" itemprop="url" rel="index"><span itemprop="text">逆向行驶</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/windows%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" style="--text-color:#416482"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="tag-name">windows深度学习</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><p>内核前置——PE文件格式</p>
+<span id="more"></span>
+
+
+<p>stu_PE：<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-246459-1.htm">[原创]【2020年5月1日更新】StudyPE (x86 &#x2F; x64) 1.11 版-安全工具-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/1.png" loading="lazy"></p>
+<p><a target="_blank" rel="noopener" href="https://0xor-writeup.readthedocs.io/zh/latest/reversing/encrypt&decrypt/%E5%8A%A0%E5%AF%86%E4%B8%8E%E8%A7%A3%E5%AF%86%20%E7%AC%AC%E5%8D%81%E7%AB%A0-PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">加密与解密 第十章 PE文件格式 - 0Xor’ CTF WriteUp</a></p>
+<h2 id="PE的基本结构"><a href="#PE的基本结构" class="headerlink" title="PE的基本结构"></a>PE的基本结构</h2><p>刚开始的我放到另一篇文章里了，那个观PE文件有感所以没什么好说的了</p>
+<h3 id="基地址ImageBase"><a href="#基地址ImageBase" class="headerlink" title="基地址ImageBase"></a>基地址ImageBase</h3><p>当PE文件传入到内存中，内存中的版本叫模块，映射文件的起始地址叫模块句柄，这个初始内存地址叫及地址</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/2.jpg" loading="lazy"></p>
+<p>这里可以进阶的去理解<code>GetModuleHandle</code>函数了，调用该函数时，传参传入一个文件或者一个名字，函数会返回对应模块的句柄（也就是那个文件被映射的基地址），如果传入的时NULL参数的话，则返回调用的函数的可执行文件</p>
+<h3 id="虚拟地址VA"><a href="#虚拟地址VA" class="headerlink" title="虚拟地址VA"></a>虚拟地址VA</h3><p>每个PE文件被映射到内存中，都有自己的虚拟空间，这个空间里的地址是虚拟地址</p>
+<h3 id="相对虚拟地址RVA"><a href="#相对虚拟地址RVA" class="headerlink" title="相对虚拟地址RVA"></a>相对虚拟地址RVA</h3><p>虚拟地址（VA）&#x3D;基地址+相对虚拟地址（RVA）</p>
+<h3 id="文件偏移地址"><a href="#文件偏移地址" class="headerlink" title="文件偏移地址"></a>文件偏移地址</h3><p>PE文件在磁盘中的时候，数据相对于文件头地址的地址是文件偏移地址</p>
+<h2 id="文件头"><a href="#文件头" class="headerlink" title="文件头"></a>文件头</h2><h3 id="MS-DOS头部00-00-00-B0"><a href="#MS-DOS头部00-00-00-B0" class="headerlink" title="MS-DOS头部	00 00-00 B0"></a>MS-DOS头部	00 00-00 B0</h3><p>每个PE文件都是以一个DOS程序开始的，有了它，DOS就可以识别它为有效的执行体，然后运行紧随的DOSstub。DOSstub也相当于一个.exe文件了，在不支持PE文件格式的操作系统中，它会简单的提示一个不可执行的错误提示，DOS一般由编译软件编译成</p>
+<p>PE文件的第一个字节位于一个传统的MS-DOS头部，称为IMAGE_DOS_HEADER，其结构体中比较重要的字段分别是</p>
+<p>e_magic和e_lfanew。e_magic字段的值一般需要被设置为5A4Dh，意味着这是一个可执行的文件。这个值有一个#define，名为IMAGE_DOS_SIGNTURE（0x5A4D），在ascii表示法里它的值为“MZ”，他在PE文件中起到定义宏的作用，而有这个宏定义，操作系统才会把这个文件认定为可执行的，而e_lfanew字段是真正的PE文件头的相对偏移，指出真正的PE头的文件偏移位置，占用4字节，位于从文件开始偏移3Ch字节处</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/3.png" loading="lazy"></p>
+<p>第一个划红线的地方是e_magic，值为MZ，第二个是e_flanew，值经过大小端序之后是00 00 00 B0，所以B0处才是真正的文件偏移位置，并且还可以看到右边有一串字符串，<code>!This program cannot be run in DOS mode.</code>这个就是前面提到的不可执行错误</p>
+<h3 id="PE文件头（IMAGE-NT-HEADER）00-B0-01-20"><a href="#PE文件头（IMAGE-NT-HEADER）00-B0-01-20" class="headerlink" title="PE文件头（IMAGE_NT_HEADER）	00 B0-01 20"></a>PE文件头（IMAGE_NT_HEADER）	00 B0-01 20</h3><p>紧跟着DOSstub的是PE文件头，其中包含很多PE转载器会用到的重要字段，当执行体在支持PE文件结构的操作系统中执行时，PE装载器将从IMAGE_DOS_HEADER结构的e_lfanew字段里找到PE_Header的起始偏移量，用其加上基址，得到PE文件头的指针</p>
+<p>PNTHeader&#x3D;ImageBase+dosHeader-&gt;e_lfanew</p>
+<h3 id="Signature字段"><a href="#Signature字段" class="headerlink" title="Signature字段"></a>Signature字段</h3><p>在一个有效的PE文件里，Signature字段被设置为0x 00 00 45 50，ACSII码字符是”PE\0\0“，定义宏为#define IMAGE_NT_SIGNATURE</p>
+<p>“PE\0\0”是一个PE文件的开始，而e_flanew字段正是指向”PE\0\0”</p>
+<h3 id="IMAGE-FILE-HEADER结构"><a href="#IMAGE-FILE-HEADER结构" class="headerlink" title="IMAGE_FILE_HEADER结构"></a>IMAGE_FILE_HEADER结构</h3><p>  IMAGE_FILE_HEADER（映射文件头）结构包含PE文件的一些基本信息，最重要的是，其中一个域指出了IMAGE_OPTIONAL_HEADER的大小，这里按照红色框框划分，依次介绍</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/4.png" loading="lazy"></p>
+<p><strong>Machine</strong>：可执行文件的目标CPU类型。PE文件可以在多种机器上使用，不同平台上指令的机器码不同</p>
+<p><strong>NumberOfSestions</strong>：区块数目，块表紧跟在IMAGE_NT_HEADER后面</p>
+<p><strong>TimeDateStamp</strong>：表示文件的创建时间。这个值是自1970年1月1日以来用格林威治时间计算的秒数，是一个比文件系统的日期&#x2F;时间更精确的文件创建时间指示器，将这个值翻译成易读的字符串需要_ctime函数。另一个对此字段有用的函数是gmtime</p>
+<p><strong>PointerToSymbolTable</strong>：COFF符号表的偏移地址位置，如果没有就是0</p>
+<p><strong>NumberOfSymbols</strong>：如果有COFF符号表，这个代表符号表的数目</p>
+<p><strong>SizeOfOptionalHeader</strong>：紧跟IMAGE_FILE_HEADER，表示数据的大小。在PE文件中，这个数据结构叫做IMAGE_OPTIONAL_HEADER，其大小依赖于当前文件是32位还是64位文件。对32位文件这个域通常是00E0h；对64位PE32+文件，这个域是00F0h。不管怎样，这些事要求的最小值，较大的值也可能出现</p>
+<p><strong>Characteristics</strong>：文件属性，有选择地通过几个值的运算得到。这些标志的有效只是定义于winnt.h内的IMAGE_FILE_XXX值。普通EXE文件的这个字段的值一般是010h，DLL文件里这个字段一般是2102h</p>
+<h3 id="IMAGE-OPTIONAL-HEADER结构-可选映像头"><a href="#IMAGE-OPTIONAL-HEADER结构-可选映像头" class="headerlink" title="IMAGE_OPTIONAL_HEADER结构-可选映像头"></a>IMAGE_OPTIONAL_HEADER结构-可选映像头</h3><p>IMAGE_FILE_HEADER与IMAGE_OPTIONAL_HEADER看起来组成了完整的“PE文件头结构”。IMAGE_OPTINAL_HEADER结构也分为32与32+，不过他们大差不差，如下表示</p>
+<p>:::success<br>typedef struct _IMAGE_OPTIONAL_HEADER<br>{<br>    &#x2F;&#x2F;<br>    &#x2F;&#x2F; Standard fields.<br>    &#x2F;&#x2F;<br>+18h    WORD    Magic;                   &#x2F;&#x2F; 标志字, ROM 映像（0107h）,普通可执行文件（010Bh）<br>+1Ah    BYTE    MajorLinkerVersion;      &#x2F;&#x2F; 链接程序的主版本号<br>+1Bh    BYTE    MinorLinkerVersion;      &#x2F;&#x2F; 链接程序的次版本号<br>+1Ch    DWORD   SizeOfCode;              &#x2F;&#x2F; 所有含代码的节的总大小<br>+20h    DWORD   SizeOfInitializedData;   &#x2F;&#x2F; 所有含已初始化数据的节的总大小<br>+24h    DWORD   SizeOfUninitializedData; &#x2F;&#x2F; 所有含未初始化数据的节的大小<br>+28h    DWORD   AddressOfEntryPoint;     &#x2F;&#x2F; 程序执行入口RVA<br>+2Ch    DWORD   BaseOfCode;              &#x2F;&#x2F; 代码的区块的起始RVA<br>+30h    DWORD   BaseOfData;              &#x2F;&#x2F; 数据的区块的起始RVA<br>    &#x2F;&#x2F;<br>    &#x2F;&#x2F; NT additional fields.    以下是属于NT结构增加的领域。<br>    &#x2F;&#x2F;<br>+34h    DWORD   ImageBase;               &#x2F;&#x2F; 程序的首选装载地址<br>+38h    DWORD   SectionAlignment;        &#x2F;&#x2F; 内存中的区块的对齐大小<br>+3Ch    DWORD   FileAlignment;           &#x2F;&#x2F; 文件中的区块的对齐大小<br>+40h    WORD    MajorOperatingSystemVersion;  &#x2F;&#x2F; 要求操作系统最低版本号的主版本号<br>+42h    WORD    MinorOperatingSystemVersion;  &#x2F;&#x2F; 要求操作系统最低版本号的副版本号<br>+44h    WORD    MajorImageVersion;       &#x2F;&#x2F; 可运行于操作系统的主版本号<br>+46h    WORD    MinorImageVersion;       &#x2F;&#x2F; 可运行于操作系统的次版本号<br>+48h    WORD    MajorSubsystemVersion;   &#x2F;&#x2F; 要求最低子系统版本的主版本号<br>+4Ah    WORD    MinorSubsystemVersion;   &#x2F;&#x2F; 要求最低子系统版本的次版本号<br>+4Ch    DWORD   Win32VersionValue;       &#x2F;&#x2F; 莫须有字段，不被病毒利用的话一般为0<br>+50h    DWORD   SizeOfImage;             &#x2F;&#x2F; 映像装入内存后的总尺寸<br>+54h    DWORD   SizeOfHeaders;           &#x2F;&#x2F; 所有头 + 区块表的尺寸大小<br>+58h    DWORD   CheckSum;                &#x2F;&#x2F; 映像的校检和<br>+5Ch    WORD    Subsystem;               &#x2F;&#x2F; 可执行文件期望的子系统<br>+5Eh    WORD    DllCharacteristics;      &#x2F;&#x2F; DllMain()函数何时被调用，默认为 0<br>+60h    DWORD   SizeOfStackReserve;      &#x2F;&#x2F; 初始化时的栈大小<br>+64h    DWORD   SizeOfStackCommit;       &#x2F;&#x2F; 初始化时实际提交的栈大小<br>+68h    DWORD   SizeOfHeapReserve;       &#x2F;&#x2F; 初始化时保留的堆大小<br>+6Ch    DWORD   SizeOfHeapCommit;        &#x2F;&#x2F; 初始化时实际提交的堆大小<br>+70h    DWORD   LoaderFlags;             &#x2F;&#x2F; 与调试有关，默认为 0<br>+74h    DWORD   NumberOfRvaAndSizes;     &#x2F;&#x2F; 下边数据目录的项数，这个字段自Windows NT 发布以来一直是16<br>+78h    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];<br>&#x2F;&#x2F; 数据目录表<br>} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;</p>
+<p>:::</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/5.png" loading="lazy">#define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b &#x2F;&#x2F; 32位PE可选头<br>#defineIMAGE_NT_OPTIONAL_HDR64_MAGIC 0x20b &#x2F;&#x2F; 64位PE可选头<br>#defineIMAGE_ROM_OPTIONAL_HDR_MAGIC 0x107<br><strong>Magic</strong>：标识可选头位数。<br><strong>AddressOfEntryPoint</strong>：持有EP的RVA（地址），指出程序最先执行的代码起始地址。<br><strong>ImageBase</strong>：优先装填区域，有点像段地址的感觉。<br><strong>SectionAlignment</strong>、<strong>FileAlignment</strong>：File——节区在文件中的最小单位，Section——节区在内存中的最小单位。<br><strong>SizeOfimage</strong>：指定了PE Image在虚拟内存中所占空间大小。<br><strong>SizeOfHeaders</strong>：指出整个PE头的大小。<br><strong>Subststem</strong>：区分文件类型（如：sys，exe，dll）。<br><strong>NumberOfRvaAndSizes</strong>：指定DataDirectory数组的个数。<br><strong>DataDirectory</strong>：由IMAGE_DATA_DIRECTORY结构体组成的数组，指向输出表，输入表等等数据（这里在所有的红圈圈之后）  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">typedefstruct_IMAGE_DATA_DIRECTORY&#123;</span><br><span class="line">DWORDVirtualAddress;//数据起始的RVA</span><br><span class="line">DWORDSize;//数据块的长度</span><br><span class="line">&#125;IMAGE_DATA_DIRECTORY,*PIMAGE_DATA_DIRECTORY;VirtualAddress</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_EXPORT 0 //0 导出表</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_IMPORT 1 //1 导入表 </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_RESOURCE 2 //2 资源目录</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_EXCEPTION 3 //3 异常目录</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_SECURITY 4 //4 安全目录</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_BASERELOC 5 /5 重定位基本表</span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_DEBUG 6 // Debug Directory </span><br><span class="line">// IMAGE_DIRECTORY_ENTRY_COPYRIGHT 7 // (X86 usage) </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_ARCHITECTURE 7 // Architecture Specific Data </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_GLOBALPTR 8 // RVA of GP </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_TLS 9 // TLS Directory </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_LOAD_CONFIG 10 // Load Configuration Directory </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_BOUND_IMPORT 11 // Bound Import Directory in headers </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_IAT 12 // Import Address Table </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_DELAY_IMPORT 13 // Delay Load Import Descriptors </span><br><span class="line">#defineIMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14 // COM Runtime descriptor </span><br></pre></td></tr></table></figure>
+
+<font style="color:rgb(38, 38, 38);background-color:rgb(250, 250, 250);">  
+</font>
+
+
+
+<h2 id="区块"><a href="#区块" class="headerlink" title="区块"></a>区块</h2><h3 id="区块表"><a href="#区块表" class="headerlink" title="区块表"></a>区块表</h3><p>在pe文件头后面便是区块表，是一个IMAGE_SECTION_HEADER结构数组。每个结构都包含了他所关联的区块信息，该数组个数由IMAGE_SECTION_HEADER.FileHeader.NumberOfSections提出（[想起来了，都想起来了].jpg）</p>
+<p>:::success<br>typedef struct _IMAGE_SECTION_HEADER </p>
+<p>{</p>
+<pre><code>BYTE Name[IMAGE_SIZEOF_SHORT_NAME];   // 节表名称,如“.text” 
+
+                                          //IMAGE_SIZEOF_SHORT_NAME=8
+</code></pre>
+<p>union{</p>
+<pre><code>   DWORD PhysicalAddress; // 在文件中的物理地址
+</code></pre>
+<p>DWORD VirtualSize;     &#x2F;&#x2F; 真实长度，这两个值是一个联合结构，可以使用其中的任何一个，一般是取后一个</p>
+<p>} Misc;</p>
+<p>DWORD VirtualAddress;          &#x2F;&#x2F; 节区的 RVA 地址</p>
+<p>DWORD SizeOfRawData;           &#x2F;&#x2F; 在文件中对齐后的尺寸</p>
+<p>DWORD PointerToRawData;        &#x2F;&#x2F; 在文件中的偏移量</p>
+<p>DWORD PointerToRelocations;    &#x2F;&#x2F; 在OBJ文件中使用，重定位的偏移</p>
+<p>DWORD PointerToLinenumbers;    &#x2F;&#x2F; 行号表的偏移（供调试使用地）</p>
+<p>WORD NumberOfRelocations;      &#x2F;&#x2F; 在OBJ文件中使用，重定位项数目</p>
+<p>WORD NumberOfLinenumbers;      &#x2F;&#x2F; 行号表中行号的数目</p>
+<p>DWORD Characteristics;         &#x2F;&#x2F; 节属性如可读，可写，可执行等</p>
+<p>} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;</p>
+<p>:::</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/6.png" loading="lazy"></p>
+<p>(1)Name：区块名。这是一个由8个ASCII码组成，用来定义区块的名称的数组。多数区块名都习惯性以一个“.”作为开头（例如：.text），这个“.”实际上是不是必须的。值得我们注意的是，如果区块名达到8 个字节，后面就没有0字符了。前边带有一个$ 的区块名字会从连接器那里得到特殊的待遇，前边带有$ 的相同名字的区块在载入时候将会被合并，在合并之后的区块中，他们是按照“$”后边的字符的字母顺序进行合并的。每个区块的名称都是唯一的，不能有同名的两个区块。但事实上节的名称不代表任何含义，他的存在仅仅是为了正规统一编程的时候方便程序员查看方便而设置的一个标记而已。所以将包含代码的区块命名为“.Data”或者说将包含数据的区块命名为“.Code”都是合法的。当我们要从PE 文件中读取需要的区块时候，不能以区块的名称作为定位的标准和依据，正确的方法是按照IMAGE_OPTIONAL_HEADER32 结构中的数据目录字段结合进行定位。</p>
+<p>(2) VirtualSize：对表对应的区块的大小，这是区块的数据在没有进行对齐处理前的实际大小。如果VirtualSize &gt; SizeOfRawData,那么SizeOfRawData是可执行文件初始化数据的大小(SizeOfRawData – VirtualSize)的字节用0来填充。这个字段在OBJ文件中被设为0。</p>
+<p>(3)VirtualAddress：该块时装载到内存中的RVA，注意这个地址是按内存页对齐的，她总是SectionAlignment的整数倍，在工具中第一个块默认RVA为1000，在OBJ中为0。</p>
+<p>(4)SizeofRawData：该块在磁盘中所占的大小,在可执行文件中，该字段包括经过FileAlignment调整后块的长度。例如FileAlignment的大小为200h，如果VirtualSize中的块长度为19Ah个字节，这一块保存的长度为200h个字节。</p>
+<p>(5) PointerToRawData：该块是在磁盘文件中的偏移，程序编译或汇编后生成原始数据，这个字段用于给出原始数据块在文件的偏移，如果程序自装载PE或COFF文件（而不是由OS装载），这种情况，必须完全使用线性映像方法装入文件，需要在该块处找到块的数据。</p>
+<p>上述四个数据很重要，在分析的时候经常用到，因此需要熟悉其代表的具体意义。</p>
+<p>PointerToRawDate+SizeofRawData&#x3D;下一块偏移地址</p>
+<p>(6) PointerToRelocations 在PE中无意义</p>
+<p>(7) PointerToLinenumbers 行号表在文件中的偏移值，文件调试的信息</p>
+<p>(8) NumberOfRelocations 在PE中无意义</p>
+<p>(9) NumberOfLinenumbers 该块在行号表中的行号数目</p>
+<p>(10) Characteristics 块属性,(如代码&#x2F;数据&#x2F;可读&#x2F;可写)的标志，这个值可通过链接器的&#x2F;SECTION选项设置.下面是比较重要的标志：</p>
+<h3 id="常见区块与区块合并"><a href="#常见区块与区块合并" class="headerlink" title="常见区块与区块合并"></a>常见区块与区块合并</h3><p>区块在映像中是按照RVA划分的，常见区块如下</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/7.png" loading="lazy"></p>
+<p>链接器的一个有趣特征就是能够合并区块。如果两个区块有相似、一致性的属性，那么它们在链接的时候能被合并成一个单一的区块。这取决于是否开启编译器的 &#x2F;merge 开关。事实上合并区块有一个好处就是可以节省磁盘的内存空间……注意：我们不应该将.rsrc、.reloc、.pdata 合并到··的区块里。</p>
+<h3 id="区块的对齐值"><a href="#区块的对齐值" class="headerlink" title="区块的对齐值"></a>区块的对齐值</h3><p>区块的大小是需要对齐的，有两种对齐值，一种用于磁盘文件，一种用于内存中，PE文件头中FileAlignment与SectionAlignment分别声明了磁盘区块与内存区块的对齐值</p>
+<p>如果区块没这么多，就用0填充</p>
+<h3 id="文件偏移与虚拟地址的转换"><a href="#文件偏移与虚拟地址的转换" class="headerlink" title="文件偏移与虚拟地址的转换"></a>文件偏移与虚拟地址的转换</h3><h4 id="RVA-和文件偏移的转换"><a href="#RVA-和文件偏移的转换" class="headerlink" title="RVA 和文件偏移的转换"></a>RVA 和文件偏移的转换</h4><p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/8.png" loading="lazy"></p>
+<p>RVA 是相对虚拟地址（RelativeVirtual Address）的缩写，顾名思义，它是一个“相对地址”是相对于基地址的相对地址</p>
+<p>举个例子，如果 Windows 装载器将一个PE 文件装入到 00400000h 处的内存中，而某个区块中的某个数据被装入 0040··xh 处，那么这个数据的 RVA 就是（0040··xh - 00400000h ）&#x3D; ··xh，反过来说，将 RVA 的值加上文件被装载的基地址，就可以找到数据在内存中的实际地址。</p>
+<h4 id="换算-RVA-和文件偏移"><a href="#换算-RVA-和文件偏移" class="headerlink" title="换算 RVA 和文件偏移"></a>换算 RVA 和文件偏移</h4><p>因为对齐值的不同，所以文件映射在内存中相对偏移地址会不同，也就出现了文件偏移地址-相对虚拟地址的转换</p>
+<p>从图中可以看到	File Offset&#x3D;RVA+k</p>
+<pre><code> File Offset=VA-k-ImageBase
+</code></pre>
+<p>后面不同块的转换计算又要涉及到，区块间隙的不同，可以按照表自己去算，也可以用工具</p>
+<h2 id="输入表"><a href="#输入表" class="headerlink" title="输入表"></a>输入表</h2><p>小tips，这里之前可以先看看c语言补习班中的联合体概念</p>
+<p>一个程序，使用来自其他DLL的代码或数据的动作称为输入。当PE文件被载入时，Windows加载器的工作之一就是定位所有被输入的函数和数据</p>
+<h3 id="输入函数的调用"><a href="#输入函数的调用" class="headerlink" title="输入函数的调用"></a>输入函数的调用</h3><p>输入函数就是这个程序要调用的函数，但是这个函数不在程序所在文件中，他可能在别的DLL文件中，在运行之前，PE加载器是不知道使用的函数在其文件中的地址等信息，直到使用了这个函数才会有信息</p>
+<p>当应用程序调用一个DLL文件的代码或者数据的时候，它正在被隐式的地链接到DLL，这个过程由Windows加载器自动完成，在运行到相关API时，这意味着其所在的DLL文件已经被加载</p>
+<p>这些过程几乎都是由Loadlibrary与GetProcAddress函数完成的，并且当他们在隐式链接的时候，这些工作都是由Windows加载器完成的，如果调用的DLL文件里的函数里还有别的DLL文件里的函数，也将由Windows加载器来完成相关加载调用</p>
+<p>在PE文件里有一组数据结构，它们分别对应于被输入的DLL。每一个这样的结构都给出了被输入的DLL的名称并指向一组函数指针，这组函数指针被称为<strong>输入地址表（IAT）</strong>，每一个被引入的API在IAT里都有保留位置，在那里它将被Windows加载器写入输入函数的地址</p>
+<p><strong>一旦模块被载入，IAT中将包含所要调用输入函数的地址</strong></p>
+<p>如果要调用一个输入函数，那么就会有如下两种方式调用</p>
+<p>我们先假设402010h处有我们需要调用的函数地址，且402010h位于IAT中</p>
+<h4 id="一-低效调用"><a href="#一-低效调用" class="headerlink" title="一.低效调用"></a>一.低效调用</h4><p>:::success<br>Call 00401164</p>
+<p>……</p>
+<p>:00401164</p>
+<p>Jmp dword ptr [00402010]</p>
+<p>:::</p>
+<pre><code>可以看到是先跳转到一个jmp指令在实现跳转，这是因为**CALL**指令中后面紧跟着的其实是实际地址，而并不是函数指针（dword ptr [00402010]），所以需要配合jmp指令
+</code></pre>
+<h4 id="二-优化"><a href="#二-优化" class="headerlink" title="二.优化"></a>二.优化</h4><p>那么想要让call指令后变成函数指针类型，就需要一个给编译器的提示形式，指令变成</p>
+<p>:::success<br>CALL DWORD PTR [XXXXXXXX]</p>
+<p>:::</p>
+<p>可以发现变成跳转函数指针了，但是这样的跳转就需要目标函数定义的时候加上前缀_declspec，示例如下：</p>
+<p>:::success<br>_declsped(dllimport) void Foo(void);</p>
+<p>:::</p>
+<h3 id="输入表的结构"><a href="#输入表的结构" class="headerlink" title="输入表的结构"></a>输入表的结构</h3><p>在PE文件头的可选映像头<strong>IMAGE_OPTIONAL_HEADER</strong>，数据目录表的第2个成员指向输入表。输入表以一个<strong>IMAGE_IMPORT_DESCRIPTOR</strong>（IID）数组开始。每个被PE文件隐式链接的DLL都有一个IID。</p>
+<p>在这个结构中并没有指出该结构数组的项数，但是他最后一个单元是NULL，例如，某个PE文件从两个DLL文件中引入函数，因此存在两个IID结构来描述这些DLL，并在两个IID结构的最后一个内容全为0的IID结构作为结束。IID的结构如下</p>
+<p>:::success<br>typedef struct _IMAGE_IMPORT_DESCRIPTOR {</p>
+<pre><code>union &#123;
+
+    DWORD   Characteristics;
+
+    DWORD   OriginalFirstThunk;             //导入名称表(INT)的地址RVA
+
+&#125; DUMMYUNIONNAME;
+
+DWORD   TimeDateStamp;                      //时间戳多数情况可忽略.如果是0xFFFFFFFF为绑定导入
+
+DWORD   ForwarderChain;                     //链表的前一个结构
+
+DWORD   Name;                               //导入DLL文件名的地址RVA
+
+DWORD   FirstThunk;                         //导入地址表(IAT)的地址RVA
+</code></pre>
+<p>} IMAGE_IMPORT_DESCRIPTOR;</p>
+<p>typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;</p>
+<p>:::</p>
+<pre><code>**OriginalFirstThunk**：包含指向**导入名称表(INT)**的RVA。INT是一个**IMAGE_THUNK_DATA**结构的数组，数组中的每个**IMAGE_THUNK_DATA**结构都指向**IMAGE_IMPORT_BY_NAME**，数组以一个内容为0的IMAGE_THUNK_DATA结构结束
+</code></pre>
+<p><strong>IMAGE_THUNK_DATA</strong>是双字的结构如下：</p>
+<p>:::success<br>&#x2F;&#x2F;成员OriginalFirstThunk与FirstThunk都指向此结构:</p>
+<p>typedef struct _IMAGE_THUNK_DATA32 {</p>
+<pre><code>union &#123;
+
+    DWORD ForwarderString;      // PBYTE
+
+    DWORD Function;             // PDWORD
+
+    DWORD Ordinal;              // 序号
+
+    DWORD AddressOfData;        // PIMAGE_IMPORT_BY_NAME
+
+&#125; u1;
+</code></pre>
+<p>} IMAGE_THUNK_DATA32;</p>
+<p>typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;</p>
+<p>:::</p>
+<p><strong>IMAGE_THUNK_DATA <strong>是一个联合体，</strong>在任何时刻，它只会使用其中一个成员</strong>。而我们通常关心的是 <code>AddressOfData</code>，它存储指向 <code>IMAGE_IMPORT_BY_NAME</code> 结构的指针。  </p>
+<p>当<strong>IMAGE_THUNK_DATA</strong>值的最高位为1时，表示函数以序号方式输入，这时低31位或63位被看成一个函数序号</p>
+<p>当<strong>IMAGE_THUNK_DATA</strong>值得最高位为0时，表示函数以字符串类型的函数名方式输入，这时双字的值是一个RVA。指向<strong>IMAGE_IMPORT_BY_NAME</strong>结构</p>
+<p><strong>IMAGE_IMPORT_BY_NAME</strong>仅有一字大小，结构如下：</p>
+<p>:::success<br>&#x2F;&#x2F;如果结构IMAGE_THUNK_DATA32成员最高有效位(MSB)为1时低31位为导出序号.否则指向此结构.</p>
+<p>typedef struct _IMAGE_IMPORT_BY_NAME {</p>
+<pre><code>WORD    Hint;   //导出序号(有些编译器不会填充此值)
+
+CHAR   Name[1]; //该值长度不准确,以0结尾的字符串.导出函数名.
+</code></pre>
+<p>} IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;</p>
+<p>:::</p>
+<pre><code> **Hint**：本函数在其所驻留的DLL的输出表的序号。这个值不是必须的，一些链接器将它设为0。他的作用是让PE装载器快速从DLL的输出表中快速查询函数
+</code></pre>
+<p><strong>Name</strong>：含有输入函数的函数名。函数名是一个ASCII字符串，以“NULL”结尾</p>
+<p>:::color5<br><strong>举例</strong>：如果程序需要调用外部函数 <code>MessageBoxA</code>，<code>OriginalFirstThunk</code> 可能会包含如下信息：</p>
+<ol>
+<li>它首先指向 <code>IMAGE_THUNK_DATA</code> 数组中的第一个元素，该元素指向 <code>IMAGE_IMPORT_BY_NAME</code>，而 <code>IMAGE_IMPORT_BY_NAME</code> 则存储 <code>MessageBoxA</code> 的名称。</li>
+<li>该数组以一个 <code>IMAGE_THUNK_DATA</code> 结构结束，内容为 0，表示数组的终结</li>
+</ol>
+<p>:::</p>
+<p>也就是本来这里存的是地址，而地址指向的是一个联合体，联合体中的第四个存储的是<code>IMAGE_IMPORT_BY_NAME</code> 的地址，最后<code>IMAGE_IMPORT_BY_NAME</code> 中有关于导入函数的信息</p>
+<p><strong>这里要是还不明白先看下面的图</strong></p>
+<p><strong>TimeDateStamp</strong>：一个32位的时间标志，可以忽略</p>
+<p><strong>ForwarderChain</strong>：这是第一个被转向的API的索引，一般为0，在程序引用一个DLL中的API而这个API又在引用其他DLL的API时使用（很少出现）</p>
+<p><strong>Name</strong>：<strong>DLL名字的指针</strong>。他是一个以”00”结尾的ASCII字符的RVA地址，该字符串包含输入的DLL名，例如“KERNEKL32.DLL””USER32.DLL”</p>
+<p><strong>FirstThunk</strong>：包含指向<strong>输入地址表（IAT）</strong>的RVA，<strong>IAT</strong>也是<strong>IMAGE_THUNK_DATA</strong>结构的数组</p>
+<p>是不是发现，欸？<strong>FirstThunk</strong>和<strong>OriginalFirstThunk</strong>感觉一样啊，因为他们本质上都是指向了<strong>IMAGE_THUNK_DATA</strong>结构，如图</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/9.png" loading="lazy"></p>
+<p>他们的结束都是由一个值为0的<strong>IMAGE_THUNK_DATA</strong>元素表示的。</p>
+<h3 id="输入地址表"><a href="#输入地址表" class="headerlink" title="输入地址表"></a>输入地址表</h3><p>那么为什么会有两个看上去一样的结构一样的表呢</p>
+<p>第一个由<strong>OriginalFirstThunk</strong>指向的<strong>IMAGE_THUNK_DATA</strong>是不可改写的，单独的一项，而第二个由<strong>FirstThunk</strong>指向的<strong>IMAGE_THUNK_DATA</strong>是由PE装载器，通过第一个<strong>OriginalFirstThunk</strong>指向的<strong>IMAGE_THUNK_DATA</strong>找到的<strong>IMAGE_IMPORT_BY_NAME</strong>中的地址，写到第二个表中的，如下图好理解</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/10.png" loading="lazy"></p>
+<h3 id="输入表实例分析"><a href="#输入表实例分析" class="headerlink" title="输入表实例分析"></a>输入表实例分析</h3><p>在这里进行这节的汇总，首先输入表在数据目录表的第2个成员指向输入表（**DataDirectory[16]**这个东东）</p>
+<p>文件里看到是80h，再根据头文件起始是B0h，输入表地址就是在整个文件的130h处，看到是40 20 00 00，那么就是002040h，不过这里是RVA值，如果在磁盘文件中查看的话就得转换成文件偏移地址</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/11.png" loading="lazy"></p>
+<p>通过stu_PE可以看到，2040h属于.rdata段，且.rdata段文件偏移对应的是600h，相对虚拟地址是2000h，所以k&#x3D;2000h-600h&#x3D;1A00h（注意这里是16进制算法），所以输入表**IMAGE_IMPORT_DESCRIPTOR(IID)**在2040h-1A00h&#x3D;640h处</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/12.png" loading="lazy"></p>
+<p>如图便是IID处，IID包含五个双字，因为IID结束的标志是下一个IID都是0，起到NULL的效果，所以上图一共是有两个IID，每个IID的第四个字段是指向DLL名称的指针，那我们来看第一个，是00 00 21 74，根据上一张图我们知道，还是属于.rdata段，所以计算结果是2174h-1A00h&#x3D;774h</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/13.png" loading="lazy"></p>
+<p>原来是USER.dll，再通过IID开始的数组元素一步步去找函数名，00 00 20 8C-&gt;06 8C，是00002110-&gt;710，所以INT是如下图</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/14.png" loading="lazy"></p>
+<p>但是发现，如›LoadIconA函数，前面有两个不可见字符，这个便是作为函数名（Hint）引用的，可以为0</p>
+<p>并且还可以观察到，IID里面的IAT与INT指向的地方刚开始是一样的。系统在程序初始化的时候会根据<strong>OrginalFirstThunk</strong>的值找到函数名，然后用GetProcAddress函数（后功能类似的系统代码）并根据函数名取得函数的入口地址，最后用函数入口地址取代FirstThunk指向的地址串中对应的值</p>
+<p>这是开始前的图</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/15.png" loading="lazy"></p>
+<p>接下来是一个从内存中抓取的实例（刚刚程序在内存中启动后保存成磁盘文件），所以他的结构就是映射到内存中的状态，由于内存中的对齐值与内存页相同，所以此时文件偏移地址与相对虚拟地址相等，先看原本的IID（2040），也就是不用转换的值<img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/16.png" loading="lazy"></p>
+<p>发现，<strong>OrginalFirstThunk</strong>没变，但是<strong>FirstThunk</strong>变了，跟着去看2010-&gt;会得到一个地址表（IAT）如下</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/17.png" loading="lazy"></p>
+<p>这个地址装的就是函数地址了，最后上一个图</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/18.png" loading="lazy"></p>
+<h3 id="绑定输入"><a href="#绑定输入" class="headerlink" title="绑定输入"></a>绑定输入</h3><p>这个的存在就是为了节省一个程序启动的准备时间，如果一个程序每开一次都要一个个去映射DLL文件然后找地址再赋值，是很麻烦的</p>
+<p>那么就可以写好一个程序使用绑定程序将其绑定，此时IAT在磁盘中也存放的是与DLL输出函数相关的实际地址，如VS中的Bind.exe就是一个绑定程序</p>
+<p>在进程执行中就需要两个假设</p>
+<pre><code>- 当程序初始化时，需要的DLL实际上加载到了他们的首选基地址中
+- 自从绑定操作执行以来，DLL输出表中引用的符号位置一直没有改变
+</code></pre>
+<p>数据目录表的第12个成员指向绑定输入，绑定输入以一个IMAGE_BOUND_IMPORT_DESCRIPTOR结构的数组开始</p>
+<p>:::success<br> typedef struct _IMAGE_BOUND_IMPORT_DESCRIPTOR {</p>
+<pre><code>     DWORD TimeDateStamp; 被输入DLL的时间，以便加载器快速判断绑定是不是最新的 WORD  			OffsetModuleName; 指向被输入DLL的名称的偏移，与第一个IBID结构之间的偏移 WORD 			NumberOfModuleForwarderRefs; 其后ModuleForwarderRefs的数目 
+</code></pre>
+<p>&#x2F;&#x2F; Array of zero or more IMAGE_BOUND_FORWARDER_REF follows</p>
+<p> } IMAGE_BOUND_IMPORT_DESCRIPTOR, </p>
+<p>*PIMAGE_BOUND_IMPORT_DESCRIPTOR;</p>
+<p>:::</p>
+<h2 id="输出表"><a href="#输出表" class="headerlink" title="输出表"></a>输出表</h2><h3 id="输出表的结构"><a href="#输出表的结构" class="headerlink" title="输出表的结构"></a>输出表的结构</h3><p>输出表的主要内容是一个表格，其中包含函数名称、输出序数等</p>
+<p>输出表是数据目录表的第一个成员，指向<strong>IMAGE_EXPORT_DIRECTORY（IED）</strong></p>
+<p>:::success<br><font style="color:rgb(64, 64, 64);"> typedef struct _IMAGE_EXPORT_DIRECTORY {</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">Characteristics</font></strong><font style="color:rgb(64, 64, 64);">; </font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">TimeDateStamp</font></strong><font style="color:rgb(64, 64, 64);">; </font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	WORD </font><strong><font style="color:rgb(64, 64, 64);">MajorVersion</font></strong><font style="color:rgb(64, 64, 64);">; </font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	WORD </font><strong><font style="color:rgb(64, 64, 64);">MinorVersion</font></strong><font style="color:rgb(64, 64, 64);">;</font></p>
+<p><font style="color:rgb(64, 64, 64);">  DWORD </font><strong><font style="color:rgb(64, 64, 64);">Name</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F;DLL的名称</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">Base</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F;起始序数值，正常为1，查询输出函数时，将该值减去，得到进入EAT的索引 		DWORD </font><strong><font style="color:rgb(64, 64, 64);">NumberOfFunctions</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F;EAT中的条目数量</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">NumberOfNames</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F;ENT表中的条目数量</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">AddressOfFunctions</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F; EAT的RVA </font></p>
+<p><font style="color:rgb(64, 64, 64);">  DWORD </font><strong><font style="color:rgb(64, 64, 64);">AddressOfNames</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F; ENT的RVA</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	DWORD </font><strong><font style="color:rgb(64, 64, 64);">AddressOfNameOrdinals</font></strong><font style="color:rgb(64, 64, 64);">; &#x2F;&#x2F; 输出序数表的RVA</font></p>
+<p><font style="color:rgb(64, 64, 64);"> 	} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;</font></p>
+<p>:::</p>
+<p>这里加两个名称，输出地址表（EAT），输出函数名称表（ENT）</p>
+<p><font style="color:rgb(64, 64, 64);"></font><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/19.png" loading="lazy"></p>
+<h3 id="输出表实例分析"><a href="#输出表实例分析" class="headerlink" title="输出表实例分析"></a>输出表实例分析</h3><p>先根据数据目录表的第一个元素，78h知道偏移位置，再根据PE文件头起始位置是100h，所以去看178h</p>
+<p>这里是00 40 00 00，倒过来就是00 00 40 00-&gt;0C00h</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/20.png" loading="lazy"></p>
+<p>这个就是输出表的内容了</p>
+<p><strong>Name：</strong>在00004032h-&gt;C32h处，可以看到是DLLDemo.DLL</p>
+<p><strong>AddressOfNames：</strong>在0000402Ch-&gt;C2Ch处，可以看到是0000403E，是个指针，再跟着去看C3Eh，MsgBox函数名</p>
+<p><strong>AddressOfNameOrdinals：</strong>在4030h处也就是C30h，00 00代表输出序号数组</p>
+<p>PE装载器调用<strong>GetProcAddress</strong>来查找DLLDemo.DLL里的API函数MsgBox，系统通过这个结构（<strong>IMAGE_EXPORT_DIRECTORY</strong>）来获得ENT的起始地址，然后通过二进制查找，知道发现目标函数的字符串，最后用输出序数，进入EAT找到目标函数的RVA最后得到地址</p>
+<h2 id="基址重定位"><a href="#基址重定位" class="headerlink" title="基址重定位"></a>基址重定位</h2><h3 id="基址重定义的概念"><a href="#基址重定义的概念" class="headerlink" title="基址重定义的概念"></a>基址重定义的概念</h3><p>这个好理解，就是把可能需要改变的地址提前存在一个数组里，等真的要改变基地址的时候（比如程序的基地址在00400000h，DLL载入一般在00870000h）去计算新的</p>
+<p>那么有可能改变的是什么呢？就是如下这种</p>
+<p>:::success<br>jmp	00401020</p>
+<p>call	00402210</p>
+<p>:::</p>
+<p>这样子的地址，如果他的基地址是00400000h的话，这个可以成立，但是如果是00870000h呢？所以到时候就会被标注改成对应的跳转，如下图</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/21.png" loading="lazy"></p>
+<h3 id="基址重定位表的结构"><a href="#基址重定位表的结构" class="headerlink" title="基址重定位表的结构"></a>基址重定位表的结构</h3><p>基址重定位表位于**.reloc**块中</p>
+<p>数据目录表的<strong>IMAGE_DIRECTORY_ENTRY_BASERELOC</strong>条目记录了他的位置</p>
+<p>基址重定位数据采用类似按页分割的方法组织，是由许多重定位块串接成的</p>
+<p><strong>IMAGE_BASE_RELOCATION</strong>结构开始</p>
+<p>:::success<br><font style="color:rgb(51, 51, 51);">IMAGE_BASE_RELOCATION STRUCT</font></p>
+<p><font style="color:rgb(51, 51, 51);">DWORD VirtualAddress; </font><font style="color:rgb(153, 153, 136);">&#x2F;&#x2F;这一组重定位数据的开始RVA，各重定向的地址必须加上这个RVA才是重							定向的完整RVA</font><font style="color:rgb(51, 51, 51);"> </font></p>
+<p><font style="color:rgb(51, 51, 51);">DWORD SizeOfBlock; </font><font style="color:rgb(153, 153, 136);">&#x2F;&#x2F;当前重定位结构的大小</font><font style="color:rgb(51, 51, 51);"> </font></p>
+<p><font style="color:rgb(51, 51, 51);"> IMAGE_BASE_RELOCATION ENDS</font></p>
+<p><font style="color:rgb(51, 51, 51);">WORD TypeOffset[</font><font style="color:rgb(0, 128, 128);">1</font><font style="color:rgb(51, 51, 51);">]; </font><font style="color:rgb(153, 153, 136);">&#x2F;&#x2F;数组，分高4位和低12位，高4位代表重定位类型，低12位代表重定位地址</font></p>
+<p><font style="color:rgb(153, 153, 136);">&#x2F;&#x2F;该地址与VirtualAddress相加，就得到需要修改数据的地址的指针</font></p>
+<p>:::</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/22.png" loading="lazy"></p>
+<h3 id="基址重定位表实例分析"><a href="#基址重定位表实例分析" class="headerlink" title="基址重定位表实例分析"></a>基址重定位表实例分析</h3><p>以DllDemo.DLL为例分析，数据目录表指向重定位表的指针是00005000h-&gt;00000E00h</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/23.png" loading="lazy"></p>
+<p><strong><font style="color:rgb(51, 51, 51);">VirtualAddress	 SizeOfBlock	  </font></strong><font style="color:rgb(51, 51, 51);"> </font><strong><font style="color:rgb(51, 51, 51);">TypeOffset[]（两字节大小）</font></strong></p>
+<p><font style="color:rgb(51, 51, 51);">以第一个为例试试，300F，高四位是3，所以是类型3，低十二位是00F,也就是说第一个需要改动的是00001000h+000000Fh&#x3D;100Fh-&gt;60Fh</font></p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/24.png" loading="lazy"></p>
+<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><h3 id="资源结构"><a href="#资源结构" class="headerlink" title="资源结构"></a>资源结构</h3><p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/25.png" loading="lazy"></p>
+<h4 id="资源目录结构-IMAGE-RESOURCE-DIRECTORY"><a href="#资源目录结构-IMAGE-RESOURCE-DIRECTORY" class="headerlink" title="资源目录结构 IMAGE_RESOURCE_DIRECTORY"></a>资源目录结构 IMAGE_RESOURCE_DIRECTORY</h4><p>数据目录表中的<strong>IMAGE_DIRECTORY_ENTRY_RESOUCE</strong>包含资源的RVA和大小</p>
+<p>资源目录结构中的每一个节点都是由<strong>IMAGE_RESOURCE_DIRECTORY</strong>结构和紧随其后的数个<strong>IMAGE_RESOURCE_DICETORY_ENTRY</strong>结构组成的，这两种结构组成了一个数据块</p>
+<p><strong>IMAGE_RESOURCE_DIRECTORY</strong>一般16字节，定义如下</p>
+<p>:::success<br>typedef struct _IMAGE_RESOURCE_DIRECTORY { </p>
+<p>DWORD Characteristics; </p>
+<p>DWORD TimeDateStamp; </p>
+<p>WORD MajorVersion; WORD MinorVersion;</p>
+<p> WORD NumberOfNamedEntries; &#x2F;&#x2F;以字符串命名的资源数量 </p>
+<p>WORD NumberOfIdEntries; &#x2F;&#x2F;以整形数字命令的资源数量 </p>
+<p>&#x2F;&#x2F; IMAGE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[]; </p>
+<p>} IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;</p>
+<p>:::</p>
+<p><strong>NumberOfNamedEntries</strong>和<strong>NumberOfIdEntries</strong>加起来是本目录的目录项总和</p>
+<h4 id="资源目录入口结构-IMAGE-RESOURCE-DICETORY-ENTRY"><a href="#资源目录入口结构-IMAGE-RESOURCE-DICETORY-ENTRY" class="headerlink" title="资源目录入口结构 IMAGE_RESOURCE_DICETORY_ENTRY"></a>资源目录入口结构 IMAGE_RESOURCE_DICETORY_ENTRY</h4><p>紧跟<strong>资源目录结构</strong>的是资源目录入口结构</p>
+<p><strong>IMAGE_RESOURCE_DICETORY_ENTRY，长度8字节，包含两个字段</strong></p>
+<p>:::success<br>IMAGE_RESOURCE_DIRECTORY_ENTRY STRUCT</p>
+<p>DWORD	Name			&#x2F;&#x2F;目录项的名称字符串指针或ID</p>
+<p>DWORD	OffsetToData		&#x2F;&#x2F;资源数据偏移地址或子目录偏移地址</p>
+<p>IMAGE_RESOURCE_DIRECTORY_ENTRY ENDS</p>
+<p>:::</p>
+<p><strong>Name</strong>：	</p>
+<pre><code>    * 当结构用于第1层目录时，定义的是资源类型
+</code></pre>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/26.png" loading="lazy"></p>
+<pre><code>    * 当结构用于第2层目录时，定义的是资源的名称
+    * 当结构用于第3层目录时，定义的是代码页编号
+    * 当最高值为0时，当ID用
+    * 当最高值为1时，低位为指针，资源名称字符串使用**Unicode**编码，指针指向的是**IMAGE_RESOUCE_DIR_STRING_U**结构定义如下
+</code></pre>
+<p>:::success<br>IMAGE_RESOUCE_DIR_STRING_U	STRUCT</p>
+<p>WORD	Length			&#x2F;&#x2F;字符串的长度	</p>
+<p>WCHAR	NameString		&#x2F;&#x2F;Unicode字符串，按字对齐长度可变</p>
+<p>  &#x2F;&#x2F;由Length指明Unicode字符串的长度</p>
+<p>IMAGE_RESOUCE_DIR_STRING_U	ENDS</p>
+<p>:::</p>
+<p><strong>OffsetToData</strong>：</p>
+<pre><code>    * 当最高位为1时，低位数据指向下一层目录块的起始位置
+    * 当最高位为0时，指针指向**IMAGE_RESOURCE_DATA_ENTRY**结构
+</code></pre>
+<p><strong>注意：Name与OffsetData作为指针的时候，偏移量从资源区块开始算起，而不是RVA（根目录的起始位置）开始</strong></p>
+<h4 id="资源数据入口-IMAGE-RESOURCE-DATA-ENTRY"><a href="#资源数据入口-IMAGE-RESOURCE-DATA-ENTRY" class="headerlink" title="资源数据入口 IMAGE_RESOURCE_DATA_ENTRY"></a>资源数据入口 IMAGE_RESOURCE_DATA_ENTRY</h4><p>经过三层<strong>IMAGE_RESOURCE_DICETORY_ENTRY</strong>（一般是），第三层目录结构中<strong>OffsetToData</strong>一般指向<strong>IMAGE_RESOURCE_DATA_ENTRY</strong>，该结构描述了资源数据的位置和大小，其定义如下</p>
+<p>:::success<br>IMAGE_RESOURCE_DATA_ENTRY STRUCT</p>
+<p>DOWRD	OffsetToData		&#x2F;&#x2F;资源数据的RVA</p>
+<p>DOWRD	Size				&#x2F;&#x2F;资源数据的长度</p>
+<p>DOWRD	CodePage		&#x2F;&#x2F;代码页，一般为0</p>
+<p>DOWRD	Reserved			&#x2F;&#x2F;保留字段</p>
+<p>IMAGE_RESOURCE_DATA_ENTRYENDS</p>
+<p>:::</p>
+<p>经过多层结构，这里的<strong>IMAGE_RESOURCE_DATA_ENTRY</strong>结构就是真正的资源数据了，OffsetToData指向资源数据的指针</p>
+<h3 id="资源结构实例分析"><a href="#资源结构实例分析" class="headerlink" title="资源结构实例分析"></a>资源结构实例分析</h3><p>实例：pediy.exe</p>
+<p>数据目录表第三个成员指向资源结构，该指针具体位置在PE文件头的88h处</p>
+<p>该文件PE文件头起始位置为0C0h，所以去看0C0h+88h&#x3D;148h</p>
+<p>是“00 40 00 00”-&gt;00004000h，因为本文件对齐值为1000h，所以直接看4000h即可</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/27.png" loading="lazy"></p>
+<p>这里再捋一遍，<strong>IMAGE_DIRECTORY_ENTRY_RESOUCE（资源目录结构）</strong>后面会跟着很多<strong>IMAGE_RESOURCE_DICETORY_ENTRY（资源目录入口结构）</strong>，在资源目录入口结构中的<strong>OffsetToData</strong>会指向下一层目录，如此往返</p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/28.png" loading="lazy"></p>
+<h4 id="根目录"><a href="#根目录" class="headerlink" title="根目录"></a>根目录</h4><p>根据结构<strong>IMAGE_DIRECTORY_ENTRY_RESOUCE</strong></p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/29.jpg" loading="lazy"></p>
+<p><img src="https://raw.githubusercontent.com/l1pmoluy/l1pmoluy.github.io/master/postpic/PE/30.jpg" loading="lazy"></p>
+<p>第一层目录中，第二个<strong>IMAGE_RESOURCE_DICETORY_ENTRY</strong>结构中<strong>Name</strong>定义为类型，ID为04h，所以是菜单，在根据<strong>OffsetToData</strong>找到下一级目录，首先<strong>OffsetToData</strong>字段80000040第一个字节80h的二进制码</p>
+<p>这里后面的内容是重复的，只需要注意每层目录的<strong>IMAGE_RESOURCE_DICETORY_ENTRY</strong>里的<strong>Name</strong>定义即可</p>
+<h3 id="资源编辑工具"><a href="#资源编辑工具" class="headerlink" title="资源编辑工具"></a>资源编辑工具</h3><p>资源数据一般存储在PE文件的.rsrc区块中，而且不能通过由程序源代码定义的变量直接访问</p>
+<p>资源类型主要有一下三种</p>
+<pre><code>- VC类标准资源：包括菜单、对话框、串表等资源
+- Delphi类标准资源：Rcdata资源
+- 非标准的Unicode字符：主要是一些VB编译程序等
+</code></pre>
+<p>对这些资源可以进行定制和修改，例如更改字体，对话框，增加按钮、菜单等</p>
+<h2 id="TIS"><a href="#TIS" class="headerlink" title="TIS"></a>TIS</h2><p>TLS是各线程的独立的数据存储空间，使用TLS技术可在线程内部独立使用</p>
+<h3 id="TLS回调函数"><a href="#TLS回调函数" class="headerlink" title="TLS回调函数"></a>TLS回调函数</h3><p>每当创建&#x2F;终止进程的线程时会自动调用执行的函数</p>
+</div></section><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>l1pmoluy,1392181761@qq.com</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="https://l1pmoluy.github.io/2024/12/04/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/" title="PE文件格式">https://l1pmoluy.github.io/2024/12/04/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/2024/12/14/DLL%E5%8F%8D%E5%B0%84%E6%B3%A8%E5%85%A5blog%E7%AE%80%E6%B4%81%E7%89%88/" rel="prev" title="Dll反射型注入"><span class="icon iconify" data-icon="ri:arrow-left-s-line"></span><span class="post-nav-text">Dll反射型注入</span></a></div><div class="post-nav-item"></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2025 </span><a class="with-love" id="animate" href="https://l1pmoluy.github.io" title="l1pmoluy's blog"><span class="icon iconify" data-icon="ri:cloud-line"></span></a><span class="author"> l1pmoluy</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v7.3.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.10.11</span></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#f5b8d5" stroke-width="2" stroke-linecap="round"></circle></svg></a><a class="popup-trigger hty-icon-button icon-search" id="search" href="javascript:;" title="搜索"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:search-line"></span></span></a><script>window.addEventListener("DOMContentLoaded", () => {
+  // Handle and trigger popup window
+  document.querySelector(".popup-trigger").addEventListener("click", () => {
+    document.querySelector(".popup").classList.add("show");
+    setTimeout(() => {
+      document.querySelector(".search-input").focus();
+    }, 100);
+  });
+
+  // Monitor main search box
+  const onPopupClose = () => {
+    document.querySelector(".popup").classList.remove("show");
+  };
+
+  document.querySelector(".popup-btn-close").addEventListener("click", () => {
+    onPopupClose();
+  });
+
+  window.addEventListener("keyup", event => {
+    if (event.key === "Escape") {
+      onPopupClose();
+    }
+  });
+});
+</script><script defer src="https://fastly.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script><script defer src="https://fastly.jsdelivr.net/npm/instantsearch.js@4/dist/instantsearch.production.min.js"></script><script defer src="/js/search/algolia-search.js" type="module"></script><div class="popup search-popup"><div class="search-header"><span class="popup-btn-close close-icon hty-icon-button"><span class="icon iconify" data-icon="ri:close-line"></span></span></div><div class="search-input-container"></div><div class="algolia-results"><div id="algolia-stats"></div><div id="algolia-hits"></div><div class="algolia-pagination" id="algolia-pagination"></div></div></div></body></html>
