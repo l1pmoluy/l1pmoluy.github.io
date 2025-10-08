@@ -247,6 +247,27 @@
   </entry>
   
   <entry>
+    <title>反调试技术</title>
+    <link href="https://l1pmoluy.github.io/2025/01/05/%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF/"/>
+    <id>https://l1pmoluy.github.io/2025/01/05/%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF/</id>
+    <published>2025-01-05T04:21:51.000Z</published>
+    <updated>2025-10-08T14:06:47.998Z</updated>
+    
+    <content type="html"><![CDATA[<p>内核前置——反调试技术</p><span id="more"></span><p>那么也是终于遇到了反调试</p><h1 id="隐藏线程"><a href="#隐藏线程" class="headerlink" title="隐藏线程"></a>隐藏线程</h1><p>在我遇到的moe新生赛中的Desktop中，用到了</p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">DWORD</span><span class="params">(WINAPI* ZW_SET_INFORMATION_THREAD)</span> <span class="params">(HANDLE, DWORD, PVOID, ULONG)</span></span>;</span><br><span class="line"><span class="comment">//相当于创建一个IAT？</span></span><br><span class="line"><span class="function">VOID <span class="title">DisableDebugEvent</span><span class="params">(VOID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    HINSTANCE hModule;<span class="comment">//句柄</span></span><br><span class="line">    ZW_SET_INFORMATION_THREAD ZwSetInformationThread;<span class="comment">//隐藏线程函数</span></span><br><span class="line">    hModule = <span class="built_in">GetModuleHandleA</span>(<span class="string">&quot;Ntdll&quot;</span>);<span class="comment">//获取Ntdll句柄（隐藏线程函数在Ntdll中</span></span><br><span class="line">    ZwSetInformationThread = (ZW_SET_INFORMATION_THREAD)<span class="built_in">GetProcAddress</span>(hModule, <span class="string">&quot;ZwSetInformationThread&quot;</span>);</span><br><span class="line">    <span class="comment">//获取函数地址然后给替身</span></span><br><span class="line">    <span class="built_in">ZwSetInformationThread</span>(<span class="built_in">GetCurrentThread</span>(), ThreadHideFromDebugger, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">//隐藏线程</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><pre><code>这样的反调试方法，是通过检测当前是否是调试状态，如果是的话就隐藏，隐藏线程之后，调试器就找不到当前调试线程了，解决方法：我想到的是，在调用这个函数之前，对他nop，然后就可以进行了，如果涉及到了tls机制，就删去它</code></pre>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;内核前置——反调试技术&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="逆向行驶" scheme="https://l1pmoluy.github.io/categories/%E9%80%86%E5%90%91%E8%A1%8C%E9%A9%B6/"/>
+    
+    
+    <category term="windows深度学习" scheme="https://l1pmoluy.github.io/tags/windows%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
     <title>异常处理技术</title>
     <link href="https://l1pmoluy.github.io/2024/12/25/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF/"/>
     <id>https://l1pmoluy.github.io/2024/12/25/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%8A%80%E6%9C%AF/</id>
@@ -341,27 +362,6 @@
     
     
     <summary type="html">&lt;p&gt;内核前置——注入技术&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="逆向行驶" scheme="https://l1pmoluy.github.io/categories/%E9%80%86%E5%90%91%E8%A1%8C%E9%A9%B6/"/>
-    
-    
-    <category term="windows深度学习" scheme="https://l1pmoluy.github.io/tags/windows%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>反调试技术</title>
-    <link href="https://l1pmoluy.github.io/2024/01/05/%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF/"/>
-    <id>https://l1pmoluy.github.io/2024/01/05/%E5%8F%8D%E8%B0%83%E8%AF%95%E6%8A%80%E6%9C%AF/</id>
-    <published>2024-01-05T04:21:51.000Z</published>
-    <updated>2025-10-08T13:53:37.494Z</updated>
-    
-    <content type="html"><![CDATA[<p>内核前置——反调试技术</p><span id="more"></span><p>那么也是终于遇到了反调试</p><h1 id="隐藏线程"><a href="#隐藏线程" class="headerlink" title="隐藏线程"></a>隐藏线程</h1><p>在我遇到的moe新生赛中的Desktop中，用到了</p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">DWORD</span><span class="params">(WINAPI* ZW_SET_INFORMATION_THREAD)</span> <span class="params">(HANDLE, DWORD, PVOID, ULONG)</span></span>;</span><br><span class="line"><span class="comment">//相当于创建一个IAT？</span></span><br><span class="line"><span class="function">VOID <span class="title">DisableDebugEvent</span><span class="params">(VOID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    HINSTANCE hModule;<span class="comment">//句柄</span></span><br><span class="line">    ZW_SET_INFORMATION_THREAD ZwSetInformationThread;<span class="comment">//隐藏线程函数</span></span><br><span class="line">    hModule = <span class="built_in">GetModuleHandleA</span>(<span class="string">&quot;Ntdll&quot;</span>);<span class="comment">//获取Ntdll句柄（隐藏线程函数在Ntdll中</span></span><br><span class="line">    ZwSetInformationThread = (ZW_SET_INFORMATION_THREAD)<span class="built_in">GetProcAddress</span>(hModule, <span class="string">&quot;ZwSetInformationThread&quot;</span>);</span><br><span class="line">    <span class="comment">//获取函数地址然后给替身</span></span><br><span class="line">    <span class="built_in">ZwSetInformationThread</span>(<span class="built_in">GetCurrentThread</span>(), ThreadHideFromDebugger, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">//隐藏线程</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><pre><code>这样的反调试方法，是通过检测当前是否是调试状态，如果是的话就隐藏，隐藏线程之后，调试器就找不到当前调试线程了，解决方法：我想到的是，在调用这个函数之前，对他nop，然后就可以进行了，如果涉及到了tls机制，就删去它</code></pre>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;内核前置——反调试技术&lt;/p&gt;</summary>
     
     
     
